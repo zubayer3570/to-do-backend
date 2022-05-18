@@ -4,7 +4,12 @@ const app = express()
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
 //middleware
-app.use(cors())
+const corsConfig = {
+    origin: true,
+    credentials: true
+}
+app.use(cors(corsConfig))
+app.options("*", cors(corsConfig))
 app.use(express.json())
 //port
 const port = process.env.PORT || 5000
@@ -18,7 +23,7 @@ const client = new MongoClient(uri)
 const run = () => {
     try {
         client.connect()
-        const collection = client.db('todo').collection('todo')
+        const collection = client.db('todo').collection('list')
         app.get('/list', async (req, res) => {
             const email = req.query.email
             const list = await collection.find({ email }).toArray()
@@ -27,7 +32,6 @@ const run = () => {
         app.post('/addwork', async (req, res) => {
             const task = req.body.task
             const result = await collection.insertOne(task)
-            console.log(result.insertedId)
             res.send({ id: result.insertedId })
         })
     } finally { }
