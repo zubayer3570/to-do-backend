@@ -2,7 +2,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 //middleware
 const corsConfig = {
     origin: true,
@@ -33,6 +33,31 @@ const run = () => {
             const task = req.body.task
             const result = await collection.insertOne(task)
             res.send({ id: result.insertedId })
+        })
+        app.put('/completed', async (req, res) => {
+            const id = req.body.id
+            const query = {
+                _id: ObjectId(id)
+            }
+            await collection.updateOne(query, {
+                $set: {
+                    strikeThrough: true
+                }
+            },
+                {
+                    upsert: true
+                })
+            res.send('completed')
+        })
+        app.delete('/delete', async (req, res) => {
+            const id = req.body.id
+            console.log(id)
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await collection.deleteOne(query)
+            console.log(result)
+            res.send({ message: 'Task Deleted' })
         })
     } finally { }
 }
